@@ -1,0 +1,6 @@
+langgraph>=1.0
+langchain>=1.0
+langchain-text-splitters
+langchain-openai        # ou langchain-mistralai / langchain-ollama selon le fournisseur
+streamlit
+pydantic
