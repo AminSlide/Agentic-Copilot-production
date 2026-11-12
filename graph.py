@@ -107,11 +107,25 @@ def build_graph():
     return g.compile()
 
 
-def diagnostiquer(question: str) -> dict:
-    """Point d'entree : renvoie l'etat final (messages de chaque agent + trajectoire)."""
+def diagnostiquer(question: str, monitorer: bool = True) -> dict:
+    """Point d'entree : renvoie l'etat final (messages de chaque agent + trajectoire).
+
+    Avec monitorer=True, un callback collecte latence, tokens et erreurs d'outils,
+    ecrit une ligne dans runs.jsonl et ajoute les metriques dans etat["metriques"].
+    """
+    from monitoring import RunMonitor, log_run
+
     graph = build_graph()
-    return graph.invoke({"messages": [HumanMessage(question)], "etapes": 0},
-                        config={"recursion_limit": 25})
+    config = {"recursion_limit": 25}
+    monitor = RunMonitor() if monitorer else None
+    if monitor:
+        config["callbacks"] = [monitor]
+    etat = graph.invoke({"messages": [HumanMessage(question)], "etapes": 0}, config=config)
+    if monitor:
+        run = monitor.summary(question, etat)
+        log_run(run)
+        etat["metriques"] = run
+    return etat
 
 
 if __name__ == "__main__":
@@ -120,3 +134,6 @@ if __name__ == "__main__":
     etat = diagnostiquer(q)
     for m in etat["messages"]:
         print(f"\n=== {getattr(m, 'name', None) or 'question'} ===\n{m.content}")
+    print("\n=== metriques ===")
+    for k, v in etat["metriques"].items():
+        print(f"{k:24} {v}")

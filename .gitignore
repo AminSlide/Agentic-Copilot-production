@@ -1,3 +1,4 @@
 usine.db
 __pycache__/
 .env
+runs.jsonl

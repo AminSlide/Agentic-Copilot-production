@@ -33,6 +33,19 @@ non-conformité qualité), on connaît donc la vérité terrain. `evaluate.py` m
 - la **trajectoire** (les bons agents ont-ils été appelés, dans le bon ordre ?)
 - la **justesse** du diagnostic final
 
+## Monitoring
+Trois niveaux, dans `monitoring.py` :
+
+| Niveau | Ce qui est suivi | Comment |
+|---|---|---|
+| Traces détaillées | Chaque appel LLM et outil, prompts et réponses | LangSmith, via `LANGSMITH_TRACING=true` et `LANGSMITH_API_KEY` |
+| Métriques par exécution | Trajectoire, latence, tokens, appels d'outils, erreurs SQL | Callback LangChain propagé à tout le graphe, une ligne JSON par exécution dans `runs.jsonl` |
+| Alertes | Latence > 60 s, taux d'erreur SQL > 30 %, limite d'étapes atteinte, exécution sans diagnostic | Règles dans `alertes()`, affichées dans Streamlit |
+
+`python monitoring.py` affiche les agrégats (taux de diagnostic, latence p50/p95, tokens moyens,
+taux d'erreur SQL, appels par agent). L'onglet **Monitoring** de l'app Streamlit montre les mêmes
+indicateurs et les dernières exécutions.
+
 ## Lancer
 ```bash
 pip install -r requirements.txt
